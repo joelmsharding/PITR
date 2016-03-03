@@ -9,9 +9,17 @@ setwd("/Volumes/750 GB HD/Users/joelharding/Dropbox (Instream)/Projects/62 - PIT
 
 path_to_folder<- "~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River"
 
-counter_paths <- dir(path_to_folder, full.names = TRUE)
+#User enters TEST PIT TAG numbers to filter out below
+test<- c("")
 
+
+pit_dat<- function(path_to_folder, test) {
+
+test<- ""
+
+counter_paths <- dir(path_to_folder, full.names = TRUE)
 names(counter_paths) <- basename(counter_paths)
+
 
 x<- plyr::ldply(counter_paths,
                       read.table, 
@@ -20,8 +28,6 @@ x<- plyr::ldply(counter_paths,
                       stringsAsFactors=FALSE,
                       col.names=c("det_type", "date", "time", "dur", "tag_type", "tag_code", "antenna", "consec_det", "no_empt_scan_prior"))
 
-#User enters TEST PIT TAG numbers to filter out below
-test<- c("")
 
 #Separate detections (D) from events (E)
 
@@ -124,6 +130,15 @@ v<- filter(e, grepl('V',desc))
 #OTHER (Not D and not E)
 
 o1<- filter(x, !(det_type %in% c("D","E")))
+
+assign("volt_dat", v, envir=globalenv())
+assign("event_dat", e, envir=globalenv())
+assign("other", o1, envir=globalenv())
+return(rbind(sa,ma))
+
+}
+
+xx<- pit_dat("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
 
 # Refer to http://support.oregonrfid.com/support/solutions/articles/5000006373-datalogger-record-format for explanation of record formatting
 
