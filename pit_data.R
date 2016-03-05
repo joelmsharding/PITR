@@ -1,21 +1,21 @@
 # Need to create custom function library for this later
 source("/Volumes/750 GB HD/Users/joelharding/Desktop/R/Code/functionlibrary.R")
 
-#setwd("/Volumes/750 GB HD/Users/joelharding/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses")
+#User defines working directory
 setwd("/Volumes/750 GB HD/Users/joelharding/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
 
 
 #Import PIT txt files: have to specify 9 columns to avoid dropping last column
 
+#User identifies location of data files
 path_to_folder<- "~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River"
 
 #User enters TEST PIT TAG numbers to filter out below
 test<- c("")
 
 
-pit_dat<- function(path_to_folder, test) {
+#pit_dat<- function(path_to_folder, test) {
 
-test<- ""
 
 counter_paths <- dir(path_to_folder, full.names = TRUE)
 names(counter_paths) <- basename(counter_paths)
@@ -66,6 +66,9 @@ sa3$no_empt_scan_prior<- as.numeric(sa3$no_empt_scan_prior)
 sa<- sa3 %>%
   distinct(.id, date, time, dur, tag_type, tag_code, consec_det, no_empt_scan_prior)
 
+#Create list of rows that were duplicates
+sa_dup<- sa3[duplicated(sa3[1:10]) | duplicated(sa3[1:10], fromLast=TRUE),]
+
 #Filter rows that have incorrect values for antenna (user can look over and decide to correct in raw data if important)
 sa_err<- filter(d1,is.na(antenna))
 
@@ -83,6 +86,9 @@ ma2<- filter(ma1,antenna %in% c("A1","A2", "A3", "A4"))
 #Remove duplicate rows
 ma<- ma2 %>%
   distinct(.id, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior)
+
+#Create list of rows that were duplicates
+ma_dup<- ma2[duplicated(ma2[1:10]) | duplicated(ma2[1:10], fromLast=TRUE),]
 
 #Filter rows that have incorrect values for antenna (user can look over and decide to correct in raw data if important)
 ma_err<- filter(ma1,!(antenna %in% c("A1","A2", "A3", "A4")))
@@ -116,29 +122,44 @@ e2$desc<- trimws(e2$desc, which = c("both"))
 e<- e2 %>%
   distinct(.id, date, time, desc)
 
+#Create list of rows that were duplicates
+e_dup<- e2[duplicated(e2[1:5]) | duplicated(e2[1:5], fromLast=TRUE),]
+
 #Filter voltage events for voltage plots
 v<- filter(e, grepl('V',desc))
 
-#START HERE, NEED TO FIND THE INVERSE OF 'DISTINCT' TO IDENTIFY DUPLICATE ROWS!
-# NEED TO EXAMINE O1 TO SEE WHAT DETECTIONS AND EVENTS WERE OMITTED
 
 ########################
 ########################
 ########################
 ########################
+
+# NEED TO FIGURE OUT HOW TO ISOLATE VALUES THAT HAVE DETECTIONS (3 ROWS IN THIS FILE)
 
 #OTHER (Not D and not E)
-
 o1<- filter(x, !(det_type %in% c("D","E")))
 
-assign("volt_dat", v, envir=globalenv())
-assign("event_dat", e, envir=globalenv())
-assign("other", o1, envir=globalenv())
-return(rbind(sa,ma))
+#Only retain unique rows
+o2<- o1%>%
+  distinct(.id, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior)
 
-}
+#Select for rows that 'H' in tag_type column (this selects detection that have corrupted data in our test files)
+o3<- filter(o2, grepl("H", tag_type))
 
-xx<- pit_dat("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
+#Change det_type to D to fix corrupt code
+o3$det_type<- "D"
+
+#START HERE TO INSERT 'NA' IN ANTENNA COLUMN FOR SA DETECTION ONLY AND SHIFT VALUES DOWN
+
+
+#FUNCTION END CODE
+#assign("volt_dat", v, envir=globalenv())
+#assign("event_dat", e, envir=globalenv())
+#assign("other", o1, envir=globalenv())
+#return(rbind(sa,ma))
+#}
+
+#xx<- pit_dat("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
 
 # Refer to http://support.oregonrfid.com/support/solutions/articles/5000006373-datalogger-record-format for explanation of record formatting
 
