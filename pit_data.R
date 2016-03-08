@@ -63,7 +63,7 @@ sa3$consec_det<- as.numeric(sa3$consec_det)
 sa3$no_empt_scan_prior<- as.numeric(sa3$no_empt_scan_prior)
 
 #Remove duplicate rows
-sa<- sa3 %>%
+sa4<- sa3 %>%
   distinct(.id, date, time, dur, tag_type, tag_code, consec_det, no_empt_scan_prior)
 
 #Create list of rows that were duplicates
@@ -81,10 +81,10 @@ sa_filenames<- unique(sa1$.id)
 
 ma1<- filter(d1,complete.cases(no_empt_scan_prior))
 #Filter proper rows
-ma2<- filter(ma1,antenna %in% c("A1","A2", "A3", "A4"))
+ma2<- filter(ma1,antenna %in% c("A1", "A2", "A3", "A4"))
 
 #Remove duplicate rows
-ma<- ma2 %>%
+ma3<- ma2 %>%
   distinct(.id, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior)
 
 #Create list of rows that were duplicates
@@ -134,8 +134,6 @@ v<- filter(e, grepl('V',desc))
 ########################
 ########################
 
-# NEED TO FIGURE OUT HOW TO ISOLATE VALUES THAT HAVE DETECTIONS (3 ROWS IN THIS FILE)
-
 #OTHER (Not D and not E)
 o1<- filter(x, !(det_type %in% c("D","E")))
 
@@ -148,6 +146,24 @@ o3<- filter(o2, grepl("H", tag_type))
 
 #Change det_type to D to fix corrupt code
 o3$det_type<- "D"
+
+#Select rows that are form multiplexers
+ma_re<- o3%>%
+  filter(grepl("A",antenna))
+
+#Function that rbinds errors rows for both multi-plexers and single readers of nrow > 0
+ant_func<- function(x,y) { 
+  if(nrow(y) > 0) rbind(x,y) else x}
+
+#Rbind ma_re to multiplexer data
+ma<- ant_func(ma3,ma_re)
+
+# START HERE NEED TO DEAL WITH SA ROW NOW< SHIFT CELLS AND RBIND ETC.
+
+
+#Rbind sa_re to single reader data
+sa<- ant_func(sa4,sa_re)
+
 
 #START HERE TO INSERT 'NA' IN ANTENNA COLUMN FOR SA DETECTION ONLY AND SHIFT VALUES DOWN
 
