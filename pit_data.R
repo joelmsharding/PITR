@@ -1,5 +1,8 @@
 # Need to create custom function library for this later
 source("/Volumes/750 GB HD/Users/joelharding/Desktop/R/Code/functionlibrary.R")
+library(stringr)
+library(dplyr)
+library(plyr)
 
 #User defines working directory
 setwd("/Volumes/750 GB HD/Users/joelharding/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
@@ -14,9 +17,9 @@ path_to_folder<- "~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT 
 test<- c("")
 
 
-#pit_dat<- function(path_to_folder, test) {
+#pit_dat<- function(path_to_folder) {
 
-
+#create directory of files in paths to folder
 counter_paths <- dir(path_to_folder, full.names = TRUE)
 names(counter_paths) <- basename(counter_paths)
 
@@ -41,9 +44,6 @@ d1<-filter(x,x$det_type=="D")
 
 #Make blank values in last column NA (single antennas do not have 'antenna' values so last two columns are shifted down)
 d1[d1==""] <- NA
-
-
-###START HERE NEED TO SORT OUT WHY BRIDGE COUNTER ROWS WITH ANTENNA VALUES 3 AND 30 ARE GETTING INTO SINGLE ANTENNA FILE BELOW
 
 #################
 #Select all rows that are from single PIT antennas
@@ -127,7 +127,12 @@ e_dup<- e2[duplicated(e2[1:5]) | duplicated(e2[1:5], fromLast=TRUE),]
 
 #Filter voltage events for voltage plots
 v<- filter(e, grepl('V',desc))
-
+v$date<- as.Date(v$date)
+#Select only voltage numbers for plotting
+v$volt<- str_sub(v$desc,-5,-2)
+v$volt<- as.numeric(trimws(v$volt, which = c("both")))
+v$time<- str_sub(v$time,1,8)
+v$datetime <- as.POSIXct(paste(v$date, v$time, sep=" "), format="%Y-%m-%d %H:%M:%S")
 
 ########################
 ########################
@@ -158,15 +163,21 @@ ant_func<- function(x,y) {
 #Rbind ma_re to multiplexer data
 ma<- ant_func(ma3,ma_re)
 
+###########
 # START HERE NEED TO DEAL WITH SA ROW NOW< SHIFT CELLS AND RBIND ETC.
+###########
 
+#Select rows that are from single readers
+sa_re1<-  filter(o3, !(grepl ("A",antenna)))
+
+#Shift numbers down 2 columns to match sa data
+names(sa_re1) [8]<- c("consec_det")
+names(sa_re1) [9]<- c("no_empt_scan_prior")
+sa_re1$antenna<- "NA"
+sa_re<- data.frame(sa_re1[,c(1:7,11,8,9)])
 
 #Rbind sa_re to single reader data
 sa<- ant_func(sa4,sa_re)
-
-
-#START HERE TO INSERT 'NA' IN ANTENNA COLUMN FOR SA DETECTION ONLY AND SHIFT VALUES DOWN
-
 
 #FUNCTION END CODE
 #assign("volt_dat", v, envir=globalenv())
@@ -179,9 +190,9 @@ sa<- ant_func(sa4,sa_re)
 
 # Refer to http://support.oregonrfid.com/support/solutions/articles/5000006373-datalogger-record-format for explanation of record formatting
 
+# Modify code so function will run if no sa or ma data present (only one type)
 # Add a check for data types for each columns eg:are all antenna values charaters etc.?
-# Add unique qualifier to avoid duplicate records (contingent on tag_ID, date and time?)
 # Categories for presence at each antenna and directional movement?
-# Single antenna or multi-plex?
-#Create a subset of Events
 #Create voltage plots from events file and relationships with detection efficiency
+#Antenna efficiencies
+#PIT tag summaries (totals, up/down, first/last detection)
