@@ -23,14 +23,18 @@ test<- c("")
 counter_paths <- dir(path_to_folder, full.names = TRUE)
 names(counter_paths) <- basename(counter_paths)
 
-
-x<- plyr::ldply(counter_paths,
+f1<- plyr::ldply(counter_paths,
                       read.table, 
                       header=FALSE, 
-                      fill=TRUE, 
+                      fill=TRUE,
                       stringsAsFactors=FALSE,
                       col.names=c("det_type", "date", "time", "dur", "tag_type", "tag_code", "antenna", "consec_det", "no_empt_scan_prior"))
 
+#Create unique ID for each reader from file names
+f1$reader<- str_sub(f1$.id,1,-16)
+
+#Create new data frame dropping .id (filname) and moving reader name to left side
+x<- data.frame(f1[,c(11,2:10)])
 
 #Separate detections (D) from events (E)
 
@@ -64,7 +68,7 @@ sa3$no_empt_scan_prior<- as.numeric(sa3$no_empt_scan_prior)
 
 #Remove duplicate rows
 sa4<- sa3 %>%
-  distinct(.id, date, time, dur, tag_type, tag_code, consec_det, no_empt_scan_prior)
+  distinct(reader, date, time, dur, tag_type, tag_code, consec_det, no_empt_scan_prior)
 
 #Create list of rows that were duplicates
 sa_dup<- sa3[duplicated(sa3[1:10]) | duplicated(sa3[1:10], fromLast=TRUE),]
@@ -72,8 +76,8 @@ sa_dup<- sa3[duplicated(sa3[1:10]) | duplicated(sa3[1:10], fromLast=TRUE),]
 #Filter rows that have incorrect values for antenna (user can look over and decide to correct in raw data if important)
 sa_err<- filter(d1,is.na(antenna))
 
-#Create list of filenames for single antennas for user to double check
-sa_filenames<- unique(sa1$.id)
+#Create list of readers for single antennas for user to double check
+sa_filenames<- unique(sa1$reader)
 
 #################
 #Select all rows that are from multiplexer PIT
@@ -85,7 +89,7 @@ ma2<- filter(ma1,antenna %in% c("A1", "A2", "A3", "A4"))
 
 #Remove duplicate rows
 ma3<- ma2 %>%
-  distinct(.id, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior)
+  distinct(reader, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior)
 
 #Create list of rows that were duplicates
 ma_dup<- ma2[duplicated(ma2[1:10]) | duplicated(ma2[1:10], fromLast=TRUE),]
@@ -94,7 +98,7 @@ ma_dup<- ma2[duplicated(ma2[1:10]) | duplicated(ma2[1:10], fromLast=TRUE),]
 ma_err<- filter(ma1,!(antenna %in% c("A1","A2", "A3", "A4")))
 
 #Create list of filenames for single antennas for user to double check
-ma_filenames<- unique(ma2$.id)
+ma_filenames<- unique(ma2$reader)
 
 ########################
 ########################
@@ -120,7 +124,7 @@ e2$desc<- trimws(e2$desc, which = c("both"))
 
 #Remove duplicate rows
 e<- e2 %>%
-  distinct(.id, date, time, desc)
+  distinct(reader, date, time, desc)
 
 #Create list of rows that were duplicates
 e_dup<- e2[duplicated(e2[1:5]) | duplicated(e2[1:5], fromLast=TRUE),]
@@ -144,7 +148,7 @@ o1<- filter(x, !(det_type %in% c("D","E")))
 
 #Only retain unique rows
 o2<- o1%>%
-  distinct(.id, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior)
+  distinct(reader, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior)
 
 #Select for rows that 'H' in tag_type column (this selects detection that have corrupted data in our test files)
 o3<- filter(o2, grepl("H", tag_type))
@@ -185,6 +189,22 @@ sa<- ant_func(sa4,sa_re)
 #assign("other", o1, envir=globalenv())
 #return(rbind(sa,ma))
 #}
+
+#Voltage plot function
+fig_name<-paste(path_to_folder,"pit_volt_plot", ".png")
+png(fig_name, height=1200, width=1200)
+par(mfrow=c(length(unique(v$reader)),1), mar=c(1.5,1.5,1,1.5), oma=c(4,4,0,0), cex=1.5)
+v2<- dplyr::arrange(v,datetime)
+d_ply(v2, c("reader"), function(dat){
+    plot(volt ~ datetime, data = dat,
+         ylim = c(min(dat$volt)-0.5, max(dat$volt)+0.5),
+         type = "l",
+         axes = FALSE)
+  #START HERE TO GEN AXES AND BOX FOR VOLT PLOT
+})
+dev.off()
+
+volt_plot
 
 #xx<- pit_dat("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
 
