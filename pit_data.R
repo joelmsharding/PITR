@@ -1,8 +1,9 @@
 # Need to create custom function library for this later
-source("/Volumes/750 GB HD/Users/joelharding/Desktop/R/Code/functionlibrary.R")
+#source("/Volumes/750 GB HD/Users/joelharding/Desktop/R/Code/functionlibrary.R")
 library(stringr)
-library(dplyr)
 library(plyr)
+library(dplyr)
+
 
 #User defines working directory
 setwd("/Volumes/750 GB HD/Users/joelharding/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
@@ -35,6 +36,7 @@ f1$reader<- str_sub(f1$.id,1,-16)
 
 #Create new data frame dropping .id (filname) and moving reader name to left side
 x<- data.frame(f1[,c(11,2:10)])
+
 
 #Separate detections (D) from events (E)
 
@@ -77,7 +79,7 @@ sa_dup<- sa3[duplicated(sa3[1:10]) | duplicated(sa3[1:10], fromLast=TRUE),]
 sa_err<- filter(d1,is.na(antenna))
 
 #Create list of readers for single antennas for user to double check
-sa_filenames<- unique(sa1$reader)
+sa_readers<- unique(sa1$reader)
 
 #################
 #Select all rows that are from multiplexer PIT
@@ -98,7 +100,7 @@ ma_dup<- ma2[duplicated(ma2[1:10]) | duplicated(ma2[1:10], fromLast=TRUE),]
 ma_err<- filter(ma1,!(antenna %in% c("A1","A2", "A3", "A4")))
 
 #Create list of filenames for single antennas for user to double check
-ma_filenames<- unique(ma2$reader)
+ma_readers<- unique(ma2$reader)
 
 ########################
 ########################
@@ -167,10 +169,6 @@ ant_func<- function(x,y) {
 #Rbind ma_re to multiplexer data
 ma<- ant_func(ma3,ma_re)
 
-###########
-# START HERE NEED TO DEAL WITH SA ROW NOW< SHIFT CELLS AND RBIND ETC.
-###########
-
 #Select rows that are from single readers
 sa_re1<-  filter(o3, !(grepl ("A",antenna)))
 
@@ -190,29 +188,14 @@ sa<- ant_func(sa4,sa_re)
 #return(rbind(sa,ma))
 #}
 
-#Voltage plot function
-fig_name<-paste(path_to_folder,"pit_volt_plot", ".png")
-png(fig_name, height=1200, width=1200)
-par(mfrow=c(length(unique(v$reader)),1), mar=c(1.5,1.5,1,1.5), oma=c(4,4,0,0), cex=1.5)
-v2<- dplyr::arrange(v,datetime)
-d_ply(v2, c("reader"), function(dat){
-    plot(volt ~ datetime, data = dat,
-         ylim = c(min(dat$volt)-0.5, max(dat$volt)+0.5),
-         type = "l",
-         axes = FALSE)
-  #START HERE TO GEN AXES AND BOX FOR VOLT PLOT
-})
-dev.off()
-
-volt_plot
 
 #xx<- pit_dat("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
 
 # Refer to http://support.oregonrfid.com/support/solutions/articles/5000006373-datalogger-record-format for explanation of record formatting
 
 # Modify code so function will run if no sa or ma data present (only one type)
-# Add a check for data types for each columns eg:are all antenna values charaters etc.?
-# Categories for presence at each antenna and directional movement?
+
 #Create voltage plots from events file and relationships with detection efficiency
-#Antenna efficiencies
-#PIT tag summaries (totals, up/down, first/last detection)
+
+#Antenna efficiencies - user specified up, down, or resident will determine AE calcs (i.e. use upstream or downstream or all other antennas to estimate AE)
+#PIT tag summaries (total fish, direction, up/down totals, first/last detection)
