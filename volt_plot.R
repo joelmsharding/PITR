@@ -9,7 +9,7 @@ d_ply(v2, c("reader"), function(dat){
   plot(volt ~ datetime, data = dat,
        ylim = c(min(dat$volt)-0.5, max(dat$volt)+0.5),
        xlim=c(min(dat$datetime), max(dat$datetime)),
-       type = "l",
+       type = "b",
        axes = FALSE)
   x_range<- seq(min(as.Date(dat$date)), max(as.Date(dat$date)), by = "days")
   r <- range(dat$datetime)
@@ -20,4 +20,3 @@ d_ply(v2, c("reader"), function(dat){
 })
 dev.off()
 
-volt_plot

@@ -6,8 +6,8 @@ library(dplyr)
 
 
 #User defines working directory
-setwd("/Volumes/750 GB HD/Users/joelharding/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
-
+#setwd("/Volumes/750 GB HD/Users/joelharding/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
+setwd("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
 
 #Import PIT txt files: have to specify 9 columns to avoid dropping last column
 
@@ -122,7 +122,13 @@ e2<-mutate(e2,desc=as.character(desc))
 #Remove NA and extra spaces at end of combined text
 e2$desc<- gsub("NA", "", paste(e2$desc))
 #Trim white space at beginning and end of character strings
-e2$desc<- trimws(e2$desc, which = c("both"))
+#e2$desc<- trimws(e2$desc, which = c("both"))
+
+#DB_EDIT########################
+#Trim white space at beginning and end of character strings
+#This does the same as the previous line of code but couldn't install memsic requried for the trimws function
+e2$desc<- gsub("^\\s+|\\s+$", "", e2$desc)
+#DB_EDIT#######################
 
 #Remove duplicate rows
 e<- e2 %>%
@@ -136,7 +142,14 @@ v<- filter(e, grepl('V',desc))
 v$date<- as.Date(v$date)
 #Select only voltage numbers for plotting
 v$volt<- str_sub(v$desc,-5,-2)
-v$volt<- as.numeric(trimws(v$volt, which = c("both")))
+#v$volt<- as.numeric(trimws(v$volt, which = c("both")))
+
+#DB_EDIT########################
+#Trim white space at beginning and end of character strings
+#This does the same as the previous line of code but couldn't install memsic requried for the trimws function
+v$volt<- as.numeric(gsub("^\\s+|\\s+$", "", v$volt))
+#DB_EDIT#######################
+
 v$time<- str_sub(v$time,1,8)
 v$datetime <- as.POSIXct(paste(v$date, v$time, sep=" "), format="%Y-%m-%d %H:%M:%S")
 
@@ -170,7 +183,7 @@ ant_func<- function(x,y) {
 ma<- ant_func(ma3,ma_re)
 
 #Select rows that are from single readers
-sa_re1<-  filter(o3, !(grepl ("A",antenna)))
+sa_re1<- filter(o3, !(grepl ("A",antenna)))
 
 #Shift numbers down 2 columns to match sa data
 names(sa_re1) [8]<- c("consec_det")
@@ -181,11 +194,17 @@ sa_re<- data.frame(sa_re1[,c(1:7,11,8,9)])
 #Rbind sa_re to single reader data
 sa<- ant_func(sa4,sa_re)
 
+#Rbind data from single (sa) and multi-readers (ma)
+all_det <- rbind(sa,ma)
+
+#Create new column that combines date and time
+all_det$date_time <- as.POSIXct(paste(all_det$date, all_det$time, sep=" "), format="%Y-%m-%d %H:%M:%S")
+
 #FUNCTION END CODE
 #assign("volt_dat", v, envir=globalenv())
 #assign("event_dat", e, envir=globalenv())
 #assign("other", o1, envir=globalenv())
-#return(rbind(sa,ma))
+#return(all_det)
 #}
 
 
@@ -199,3 +218,4 @@ sa<- ant_func(sa4,sa_re)
 
 #Antenna efficiencies - user specified up, down, or resident will determine AE calcs (i.e. use upstream or downstream or all other antennas to estimate AE)
 #PIT tag summaries (total fish, direction, up/down totals, first/last detection)
+
