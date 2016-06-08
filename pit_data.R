@@ -71,6 +71,7 @@ sa3$no_empt_scan_prior<- as.numeric(sa3$no_empt_scan_prior)
 #Remove duplicate rows
 sa4<- sa3 %>%
   distinct(reader, date, time, dur, tag_type, tag_code, consec_det, no_empt_scan_prior)
+  
 
 #Create list of rows that were duplicates
 sa_dup<- sa3[duplicated(sa3[1:10]) | duplicated(sa3[1:10], fromLast=TRUE),]
@@ -182,6 +183,9 @@ ant_func<- function(x,y) {
 #Rbind ma_re to multiplexer data
 ma<- ant_func(ma3,ma_re)
 
+#Remove 'A' from antenna values and convert to numeric
+ma$antenna<- as.numeric(substr(ma$antenna, 2, 2))
+
 #Select rows that are from single readers
 sa_re1<- filter(o3, !(grepl ("A",antenna)))
 
@@ -196,6 +200,7 @@ sa<- ant_func(sa4,sa_re)
 
 #Rbind data from single (sa) and multi-readers (ma)
 all_det <- rbind(sa,ma)
+all_det$antenna<- as.numeric(all_det$antenna)
 
 #Create new column that combines date and time
 all_det$date_time <- as.POSIXct(paste(all_det$date, all_det$time, sep=" "), format="%Y-%m-%d %H:%M:%S")
