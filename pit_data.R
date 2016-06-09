@@ -3,6 +3,10 @@
 library(stringr)
 library(plyr)
 library(dplyr)
+library(lubridate)
+
+#TO DO
+#WRAP EVERYTHIGN IN FUNCTION AND MAKE SO CODE RUNS WHETHER THERE IS ONLY MULTIPLEXER DATA, SINGLE READER, OR BOTH
 
 
 #User defines working directory

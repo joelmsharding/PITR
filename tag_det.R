@@ -1,3 +1,5 @@
+source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data.R")
+
 #Keeps tag_code in all_det that match tagging data
 
 #upload tagging data

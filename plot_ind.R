@@ -1,3 +1,5 @@
+source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data.R")
+
 #Creates a detection history plot for each PIT-tagged fish
 
 #Function has to assign a station number to each station name

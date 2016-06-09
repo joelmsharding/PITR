@@ -1,5 +1,11 @@
+source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data.R")
+
 #Voltage plot function
 # v is voltage data propagated from data cleaning function (pit_dat)
+
+#TO DO
+# Need to fix width, height and par so it changes depending on number of unique readers
+
 
 fig_name<-paste(path_to_folder,"pit_volt_plot",".png")
 png(fig_name, height=1200, width=1200)
