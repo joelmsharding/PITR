@@ -5,7 +5,6 @@ source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data.
 #TO DO:
 #CREATE FUNCTION THAT ALLOWS USER TO SPECIFY TEMPORAL RESOLUTION (HOUR,WEEK,MONTH,YEAR,ALL)
 
-
 dir_total<- function(dat){
   #Remove single reader rows form data set (breated with pit_data function)
   xv<- subset(dat, antenna != "NA")
@@ -27,10 +26,14 @@ dir_total<- function(dat){
     #Order by date_time
     x[order(x$date_time),]
     tot<- sum(x$tally)
-    first_det = as.POSIXct(min(x$date_time))
-    last_det = as.POSIXct(max(x$date_time))
-    time_diff = round(last_det - first_det,2)
-    data.frame(tot, first_det, last_det, time_diff)
+    first_det <- min(x$lub_time)
+    last_det <- max(x$lub_time)
+    
+    #This is still not working properly
+    time_diff <- interval(first_det,last_det)
+    time_diff_days<- round(time_diff/ddays(1),2)
+    time_diff_mins<- round(time_diff/dminutes(1),2)
+    data.frame(tot, first_det, last_det, time_diff_days, time_diff_mins)
     
   })
   return(dir_t)

@@ -6,7 +6,7 @@ library(dplyr)
 library(lubridate)
 
 #TO DO
-#WRAP EVERYTHIGN IN FUNCTION AND MAKE SO CODE RUNS WHETHER THERE IS ONLY MULTIPLEXER DATA, SINGLE READER, OR BOTH
+#WRAP EVERYTHING IN FUNCTION AND MAKE SO CODE RUNS WHETHER THERE IS ONLY MULTIPLEXER DATA, SINGLE READER, OR BOTH
 
 
 #User defines working directory
@@ -208,6 +208,7 @@ all_det$antenna<- as.numeric(all_det$antenna)
 
 #Create new column that combines date and time
 all_det$date_time <- as.POSIXct(paste(all_det$date, all_det$time, sep=" "), format="%Y-%m-%d %H:%M:%S")
+all_det$lub_time<- ymd_hms(all_det$date_time)
 
 #FUNCTION END CODE
 #assign("volt_dat", v, envir=globalenv())
