@@ -16,13 +16,13 @@ source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data.
 ########################
 #Calculate detection efficiency based on assumptions about fish movement direction (i.e. up, down, resident)
 
-detection_eff<- function(dat, direction){
+det_eff<- function(dat, direction){
 
   if(direction=="up"){  
     
     det<- ddply(dat, c("reader","antenna"), function(x){
       
-      #select unque tag codes for all antennas upstream of antenna X
+      #select unique tag codes for all antennas upstream of antenna X
       all_tag<- unique(subset(dat, antenna > x$antenna[1],na.rm=TRUE)$tag_code)
       
       #select all unique tag codes for antenna x
@@ -116,8 +116,8 @@ return(det)
 ########################
 
 #Run the function for all direction options
-detection_eff(all_det, "up")
+det_eff(all_det, "up")
 
-detection_eff(all_det, "down")
+det_eff(all_det, "down")
 
-detection_eff(all_det, "resident")
+det_eff(all_det, "resident")

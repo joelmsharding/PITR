@@ -3,14 +3,19 @@
 ######################
 # ALL FILES MUST BE NAMED : pit_reader_mm_dd_yyyy.txt (where pit_reader is unique name of reader)
 # IF .txt  NOT AT END OF FILE NAME IT MUST BE NMANUALLY ADDED
-# MONTH, DAY AND YEAR MUST ALL BE SEPARTED BY UNDERSCORES
+# MONTH, DAY AND YEAR MUST ALL BE SEPARATED BY UNDERSCORES
+#test_tags is a concantinated list of tag codes that were used to test equipment setup and should be removed from data set
 ######################
 
+#User defines working directory
+setwd("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
 
-library(stringr)
-library(plyr)
-library(dplyr)
-library(lubridate)
+pit_data<- function(path_to_folder,test_tags){
+
+require(stringr)
+require(plyr)
+require(dplyr)
+require(lubridate)
 
 #avoids scientific notation: use "options(scipen=0)" to turn back on
 options(scipen=999)
@@ -19,40 +24,23 @@ options(scipen=999)
 ant_func<- function(x,y) { 
   if(nrow(y) > 0) rbind(x,y) else x}
 
-#Function that rbinds rows only when object y exists
+#Function that rbinds rows only when object y exists (i.e. so funciton will works if either sa or ma does not have any data) and if old_dat object does not exist
 #HAVING TROUBLE WITH THIS ONE...
 
 null_func<- function(x,y) { 
   if(exists('y')==TRUE, envir=parent.frame()) rbind(x,y) else x}
 
-
-#User defines working directory
-#setwd("/Volumes/750 GB HD/Users/joelharding/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
-setwd("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
-#setwd("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Seton Dam Fishway")
-
 #Import PIT txt files: have to specify 9 columns to avoid dropping last column
-
-#User identifies location of data files
-path_to_folder<- "~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River"
-#path_to_folder<- "~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Seton Dam Fishway"
-
-#User enters TEST PIT TAG numbers to filter out below
-test<- c("")
-
-
-#pit_dat<- function(path_to_folder) {
-
 #create directory of files in paths to folder
 counter_paths <- dir(path_to_folder, full.names = TRUE)
 names(counter_paths) <- basename(counter_paths)
 
 f1<- plyr::ldply(counter_paths,
-                      read.table, 
-                      header=FALSE, 
-                      fill=TRUE,
-                      stringsAsFactors=FALSE,
-                      col.names=c("det_type", "date", "time", "dur", "tag_type", "tag_code", "antenna", "consec_det", "no_empt_scan_prior"))
+                 read.table, 
+                 header=FALSE, 
+                 fill=TRUE,
+                 stringsAsFactors=FALSE,
+                 col.names=c("det_type", "date", "time", "dur", "tag_type", "tag_code", "antenna", "consec_det", "no_empt_scan_prior"))
 
 #Create unique ID for each reader from file names
 f1$reader<- str_sub(f1$.id,1,-16)
@@ -72,9 +60,7 @@ x<- data.frame(f1[,c(11,2:10)])
 d0<-filter(x,x$det_type=="D")
 
 #Rbind in old data from "Old PIT data conversion.R" if old data present
-#d11<- rbind(d0,old_dat)
-
-d1<- null_func(d0, old_dat)
+d1<- ant_func(d0, old_dat)
 
 #Make blank values in last column NA (single antennas do not have 'antenna' values so last two columns are shifted down)
 d1[d1==""] <- NA
@@ -99,7 +85,7 @@ sa3$no_empt_scan_prior<- as.numeric(sa3$no_empt_scan_prior)
 #Remove duplicate rows
 sa4<- sa3 %>%
   distinct(reader, date, time, dur, tag_type, tag_code, consec_det, no_empt_scan_prior)
-  
+
 
 #Create list of rows that were duplicates
 sa_dup<- sa3[duplicated(sa3[1:10]) | duplicated(sa3[1:10], fromLast=TRUE),]
@@ -200,7 +186,7 @@ o3<- filter(o2, grepl("H", tag_type))
 #Change det_type to D to fix corrupt code
 o3$det_type<- "D"
 
-#Select rows that are form multiplexers
+#Select rows that are from multiplexers
 ma_re<- o3%>%
   filter(grepl("A",antenna))
 
@@ -223,7 +209,17 @@ sa_re<- data.frame(sa_re1[,c(1:7,11,8,9)])
 sa<- ant_func(sa4,sa_re)
 
 #Rbind data from single (sa) and multi-readers (ma)
-all_det <- rbind(sa,ma)
+xx <- rbind(sa,ma)
+
+xx<- if((nrow(ma)>0)&(nrow(sa)>0)) {
+  
+}
+
+
+
+#Remove known test tags
+all_det<- filter(xx,!(tag_code %in% test_tags))
+
 all_det$antenna<- as.numeric(all_det$antenna)
 
 #Create new column that combines date and time
@@ -231,21 +227,21 @@ all_det$date_time <- as.POSIXct(paste(all_det$date, all_det$time, sep=" "), form
 all_det$lub_time<- ymd_hms(all_det$date_time)
 
 #FUNCTION END CODE
-#assign("volt_dat", v, envir=globalenv())
-#assign("event_dat", e, envir=globalenv())
-#assign("other", o1, envir=globalenv())
-#return(all_det)
-#}
+assign("volt_dat", v, envir=globalenv())
+assign("event_dat", e, envir=globalenv())
+assign("other", o1, envir=globalenv())
+return(all_det)
+}
+
+#User identifies location of data files
+path_to_folder<- "~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River"
+
+
+
 
 
 #xx<- pit_dat("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
 
 # Refer to http://support.oregonrfid.com/support/solutions/articles/5000006373-datalogger-record-format for explanation of record formatting
 
-# Modify code so function will run if no sa or ma data present (only one type)
-
-#Create voltage plots from events file and relationships with detection efficiency
-
-#Antenna efficiencies - user specified up, down, or resident will determine AE calcs (i.e. use upstream or downstream or all other antennas to estimate AE)
-#PIT tag summaries (total fish, direction, up/down totals, first/last detection)
 
