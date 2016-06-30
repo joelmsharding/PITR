@@ -51,10 +51,10 @@ o_x$det_type<- ifelse(o_x$tag_type %in% c("R","A"),"D","NA")
 o_d<- filter(o_x,det_type=="D")
 
 #Arrange columns to match new data
-o_d1<- data.frame(o_d[,c(1,10,2:9)])
+old_dat<- data.frame(o_d[,c(1,10,2:9)])
 
 #Need to change date format here from MM/DD/YYYY to YYYY-MM-DD
-o_d1$date<- as.character(as.Date(o_d1$date, format="%m/%d/%Y"))
+old_dat$date<- as.character(as.Date(o_d1$date, format="%m/%d/%Y"))
 
 ####################
 ######OLD OTHER#####

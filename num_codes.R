@@ -1,6 +1,6 @@
-source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data.R")
+test_dat<- pit_dat(ptf,tt)
 
-#Number of unique tag codes detected on each reader
+#Number of unique tag codes detected on each reader - this would be the NULL option
 
 num_codes <- function(dat){
  
@@ -15,103 +15,106 @@ num_codes(all_det)
 
 ####################
 
-#Summarize the number of unique tag codes by hour
-time_res <- function(dat, resolution){
+
+
+#Summarize the data by a specified time resolution (hour, day, week, month, year)
+time_res <- function(dat, resolution, start_date = min(dat$date_time), end_date = max(dat$date_time)){
   
-  if(resolution == "hour")
-
-    #create new 'hour' column with a posixct format
-    dat$hour <- as.POSIXct(paste(dat$date_time, format = "%Y:%m:%d %H:%M:%S"))
-    
-    #round detection data to nearest hour
-    dat$hour <- as.POSIXct(round(dat$hour, "hour"))
-    
-    ddply(dat, c("reader", "hour"), function(x){
-      
-    #number of unique tag codes per reader  
-    num_codes <- length(unique(x$tag_code))
-
-    #create data frame
-    data.frame(num_codes)
-    })
-    
-}
-
-#run function for hours
-time_res(all_det, "hour")
-
-####################
-
-#Summarize the number of unique tag codes by day
-time_res <- function(dat, resolution){
+  range <- filter(dat, date_time >= start_date  & date_time <= end_date)
   
-  if(resolution == "day")    
-    
-    #create new 'days' column with a posixct format
-    dat$day <- as.POSIXct(paste(dat$date, format = "%Y:%m:%d"))
-
-    ddply(dat, c("reader", "day"), function(x){
-  
-    #number of unique tag codes per reader  
-    num_codes <- length(unique(x$tag_code))
-  
-    #create data frame
-    data.frame(num_codes)
-    })
-    
-}
-
-#run function for days
-time_res(all_det, "day")
-
-####################
-
-#Summarize the number of unique tag codes by week
-#Note that this function uses lubridate and returns the (standardized) week of the year (i.e., week 40 of 52 weeks in a year)
-time_res <- function(dat, resolution){
-  
-  if(resolution == "week")    
+  if(resolution == "hour"){    
     
     #create new week column
-    dat$week <- week(dat$date)
+    range$hour <- hour(range$date_time)
   
-  ddply(dat, c("reader", "week"), function(x){
+      det <- ddply(range, c("reader", "hour"), function(x){
     
-    #number of unique tag codes per reader  
-    num_codes <- length(unique(x$tag_code))
+      #number of unique tag codes per reader  
+      num_codes <- length(unique(x$tag_code))
     
-    #create data frame
-    data.frame(num_codes)
-  })
-  
-}
+      #create data frame
+      data.frame(num_codes)
+      })
+    }
 
-#run function for weeks
-time_res(all_det, "week")
+
+####################
+  
+  if(resolution == "day"){    
+    
+    #create new 'days' column with a posixct format
+    range$day <- as.POSIXct(paste(range$date, format = "%Y:%m:%d"))
+
+      det <- ddply(range, c("reader", "day"), function(x){
+  
+      #number of unique tag codes per reader  
+      num_codes <- length(unique(x$tag_code))
+  
+      #create data frame
+      data.frame(num_codes)
+      })
+    }
+
 
 ####################
 
-#Summarize the number of unique tag codes by month
-time_res <- function(dat, resolution){
+  if(resolution == "week"){    
+    
+    #create new week column
+    range$week <- week(range$date)
   
-  if(resolution == "month")    
+      det <- ddply(range, c("reader", "week"), function(x){
     
-    #create new 'months' column
-    dat$month <- substring(dat$date, first = 6, last = 7)
+      #number of unique tag codes per reader  
+      num_codes <- length(unique(x$tag_code))
+    
+      #create data frame
+      data.frame(num_codes)
+      })
+    }
+
+####################
   
-  ddply(dat, c("reader", "month"), function(x){
+  if(resolution == "month"){    
     
-    #number of unique tag codes per reader  
-    num_codes <- length(unique(x$tag_code))
+    #create new month column
+    range$month <- month(range$date_time)
+  
+      det <- ddply(range, c("reader", "month"), function(x){
     
-    #create data frame
-    data.frame(num_codes)
-  })
+      #number of unique tag codes per reader  
+      num_codes <- length(unique(x$tag_code))
+    
+      #create data frame
+      data.frame(num_codes)
+      })
+    }
+
+####################
+
+    if(resolution == "year"){    
+    
+    #create new week column
+      range$year <- year(range$date_time)
+  
+      det <- ddply(range, c("reader", "year"), function(x){
+    
+      #number of unique tag codes per reader  
+      num_codes <- length(unique(x$tag_code))
+    
+      #create data frame
+      data.frame(num_codes)
+      })
+    }
+
+return(det)
   
 }
 
-#run function for months
+#run the function for all resolution options
+time_res(all_det, "hour")
+time_res(all_det, "day")
+time_res(all_det, "week")
 time_res(all_det, "month")
-
-
-
+time_res(all_det, "year")
+time_res(all_det, "week", "2015-11-01", "2015-11-30")

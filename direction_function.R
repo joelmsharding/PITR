@@ -1,13 +1,12 @@
 #TO DO:
 #INTEGRATE CODE THAT ALLOWS USER TO SPECIFY TEMPORAL RESOLUTION (# BY HOUR, DAY, WEEK,MONTH,YEAR,ALL)
 
-source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data.R")
+#Sources pit dat function that produces data set called f_test
+source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data_function.R")
 
 #A function that determines upstream or downstream movement of a fish when more than one antenna in place. 
 #Also determines whether antennas that detected consequtive detections are adjacent or more than one apart.
 
-#TO DO:
-#CREATE FUNCTION THAT ALLOWS USER TO SPECIFY TEMPORAL RESOLUTION (WEEK,MONTH,YEAR,ALL)
 
 
 direction<- function(dat){
@@ -30,7 +29,7 @@ direction<- function(dat){
   return(dir_cs)
   }
   
-test<- direction(all_det)
+dir_test<- direction(f_test)
 
 
     

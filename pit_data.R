@@ -1,3 +1,5 @@
+#TO DO
+#INTEGRATE CODE THAT ALLOWS USER TO SPECIFY TEMPORAL RESOLUTION (# HOURS, DAY, WEEK,MONTH,YEAR,ALL)
 # Need to create custom function library for this later
 
 ######################
@@ -19,12 +21,6 @@ options(scipen=999)
 ant_func<- function(x,y) { 
   if(nrow(y) > 0) rbind(x,y) else x}
 
-#Function that rbinds rows only when object y exists
-#HAVING TROUBLE WITH THIS ONE...
-
-null_func<- function(x,y) { 
-  if(exists('y')==TRUE, envir=parent.frame()) rbind(x,y) else x}
-
 
 #User defines working directory
 #setwd("/Volumes/750 GB HD/Users/joelharding/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")
@@ -38,10 +34,8 @@ path_to_folder<- "~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT 
 #path_to_folder<- "~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Seton Dam Fishway"
 
 #User enters TEST PIT TAG numbers to filter out below
-test<- c("")
+test_tags<- c("900_230000010075")
 
-
-#pit_dat<- function(path_to_folder) {
 
 #create directory of files in paths to folder
 counter_paths <- dir(path_to_folder, full.names = TRUE)
@@ -69,12 +63,13 @@ x<- data.frame(f1[,c(11,2:10)])
 ########################
 
 #DETECTIONS
-d0<-filter(x,x$det_type=="D")
+d1<-filter(x,x$det_type=="D")
 
 #Rbind in old data from "Old PIT data conversion.R" if old data present
-#d11<- rbind(d0,old_dat)
+if(exists("old_dat", envir = .GlobalEnv)) {
+  d1 <- rbind(d1,old_dat)
+}
 
-d1<- null_func(d0, old_dat)
 
 #Make blank values in last column NA (single antennas do not have 'antenna' values so last two columns are shifted down)
 d1[d1==""] <- NA
@@ -98,9 +93,8 @@ sa3$no_empt_scan_prior<- as.numeric(sa3$no_empt_scan_prior)
 
 #Remove duplicate rows
 sa4<- sa3 %>%
-  distinct(reader, date, time, dur, tag_type, tag_code, consec_det, no_empt_scan_prior)
+  distinct(reader, date, time, dur, tag_type, tag_code, consec_det, no_empt_scan_prior, .keep_all=TRUE)
   
-
 #Create list of rows that were duplicates
 sa_dup<- sa3[duplicated(sa3[1:10]) | duplicated(sa3[1:10], fromLast=TRUE),]
 
@@ -120,7 +114,7 @@ ma2<- filter(ma1,antenna %in% c("A1", "A2", "A3", "A4"))
 
 #Remove duplicate rows
 ma3<- ma2 %>%
-  distinct(reader, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior)
+  distinct(reader, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior, .keep_all=TRUE)
 
 #Create list of rows that were duplicates
 ma_dup<- ma2[duplicated(ma2[1:10]) | duplicated(ma2[1:10], fromLast=TRUE),]
@@ -161,7 +155,7 @@ e2$desc<- gsub("^\\s+|\\s+$", "", e2$desc)
 
 #Remove duplicate rows
 e<- e2 %>%
-  distinct(reader, date, time, desc)
+  distinct(reader, date, time, desc, .keep_all=TRUE)
 
 #Create list of rows that were duplicates
 e_dup<- e2[duplicated(e2[1:5]) | duplicated(e2[1:5], fromLast=TRUE),]
@@ -192,7 +186,7 @@ o1<- filter(x, !(det_type %in% c("D","E")))
 
 #Only retain unique rows
 o2<- o1%>%
-  distinct(reader, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior)
+  distinct(reader, date, time, dur, tag_type, tag_code, antenna, consec_det, no_empt_scan_prior, .keep_all=TRUE)
 
 #Select for rows that 'H' in tag_type column (this selects detection that have corrupted data in our test files)
 o3<- filter(o2, grepl("H", tag_type))
@@ -200,7 +194,7 @@ o3<- filter(o2, grepl("H", tag_type))
 #Change det_type to D to fix corrupt code
 o3$det_type<- "D"
 
-#Select rows that are form multiplexers
+#Select rows that are from multiplexers
 ma_re<- o3%>%
   filter(grepl("A",antenna))
 
@@ -222,20 +216,28 @@ sa_re<- data.frame(sa_re1[,c(1:7,11,8,9)])
 #Rbind sa_re to single reader data
 sa<- ant_func(sa4,sa_re)
 
-#Rbind data from single (sa) and multi-readers (ma)
-all_det <- rbind(sa,ma)
+#Combine single and multi reader data if both exist
+if(nrow(ma)>0 & nrow(sa)>0) {
+  xx <- rbind(ma,sa)
+}
+
+if(nrow(ma)==0 & nrow(sa)>0) {
+  xx <- sa
+}
+
+if(nrow(ma)>0 & nrow(sa)==0) {
+  xx <- ma
+}
+
+#Remove known test tags
+all_det<- filter(xx,!(tag_code %in% test_tags))
+
 all_det$antenna<- as.numeric(all_det$antenna)
 
 #Create new column that combines date and time
 all_det$date_time <- as.POSIXct(paste(all_det$date, all_det$time, sep=" "), format="%Y-%m-%d %H:%M:%S")
 all_det$lub_time<- ymd_hms(all_det$date_time)
 
-#FUNCTION END CODE
-#assign("volt_dat", v, envir=globalenv())
-#assign("event_dat", e, envir=globalenv())
-#assign("other", o1, envir=globalenv())
-#return(all_det)
-#}
 
 
 #xx<- pit_dat("~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River")

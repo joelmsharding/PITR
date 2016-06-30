@@ -1,7 +1,11 @@
 #TO DO:
 #INTEGRATE CODE THAT ALLOWS USER TO SPECIFY TEMPORAL RESOLUTION (# BY HOUR, DAY, WEEK,MONTH,YEAR,ALL)
+#NEED TO CREATE A SEPARATE FUNCTION THAT ALLOWS READERS AND ANTENNAS TO BE CHANGED PROPR TO USING THIS (SEE MY WHITEBOARD)
+#CAN THEN RUN THIS FUNCTION ON BRIDGE COUNTER DATA AFTER SPITTING ANTENNAS 1-4 INTO 2 SEPARATE READERS EACH WITH 2 ANTENNAS TO CALCULATE CORRECT DETECTION EFFICIENCIES!
 
-source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data.R")
+
+#Sources pit dat function that produces data set called f_test
+source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data_function.R")
 
 ###################################################################
 ###ANTENNAS MUST BE ORDERED 1 THROUGH X, DOWNSTREAM TO UPSTREAM###
@@ -119,8 +123,8 @@ return(det)
 ########################
 
 #Run the function for all direction options
-det_eff(all_det, "up")
+det_eff(f_test, "up")
 
-det_eff(all_det, "down")
+det_eff(f_test, "down")
 
-det_eff(all_det, "resident")
+det_eff(f_test, "resident")

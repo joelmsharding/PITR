@@ -1,3 +1,6 @@
+#TO DO:
+#INTEGRATE CODE THAT ALLOWS USER TO SPECIFY TEMPORAL RESOLUTION (# BY HOUR, DAY, WEEK,MONTH,YEAR,ALL)
+
 source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data.R")
 
 #Creates a detection history plot for each PIT-tagged fish
