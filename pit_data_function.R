@@ -256,7 +256,7 @@ return(all_det) # cleaned and combined detection data set
 ptf<- "~/Dropbox (Instream)/Projects/62 - PIT R & D/5 - Data/Raw PIT Files/Bridge River"
 
 #Define test tags (if any)
-tt=c("900_230000010075")
+tt=c("900_230000010075","900_230000010079","900_230000010080")
 
 f_test<- pit_dat(ptf,tt)
 
