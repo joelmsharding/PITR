@@ -1,4 +1,5 @@
-test_dat<- pit_dat(ptf,tt)
+source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data_function.R")
+
 
 #Number of unique tag codes detected on each reader - this would be the NULL option
 
@@ -14,7 +15,6 @@ num_codes <- function(dat){
 num_codes(all_det)
 
 ####################
-
 
 
 #Summarize the data by a specified time resolution (hour, day, week, month, year)
@@ -112,9 +112,9 @@ return(det)
 }
 
 #run the function for all resolution options
-time_res(all_det, "hour")
-time_res(all_det, "day")
-time_res(all_det, "week")
-time_res(all_det, "month")
-time_res(all_det, "year")
-time_res(all_det, "week", "2015-11-01", "2015-11-30")
+time_res(f_test, "hour")
+time_res(f_test, "day")
+time_res(f_test, "week")
+time_res(f_test, "month")
+time_res(f_test, "year")
+time_res(f_test, "week", "2015-11-01", "2015-11-30")
