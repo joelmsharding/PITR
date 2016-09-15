@@ -1,5 +1,5 @@
 #TO DO
-#INTEGRATE CODE THAT ALLOWS USER TO SPECIFY TEMPORAL RESOLUTION (# BY HOUR, DAY, WEEK,MONTH,YEAR,ALL)
+#Temporal Rersolution not required
 # Need to create custom function library for this later
 
 ######################

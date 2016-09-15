@@ -1,5 +1,6 @@
 #TO DO:
-#INTEGRATE CODE THAT ALLOWS USER TO SPECIFY TEMPORAL RESOLUTION (# BY HOUR, DAY, WEEK,MONTH,YEAR,ALL)
+#Temporal resolution not required
+
 
 #Sources pit dat function that produces data set called f_test
 source("~/Dropbox (Instream)/Projects/62 - PIT R & D/3 - Analyses/PITR/pit_data_function.R")

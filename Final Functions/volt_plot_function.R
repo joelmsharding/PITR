@@ -1,5 +1,4 @@
 #TO DO:
-#INTEGRATE CODE THAT ALLOWS USER TO SPECIFY TEMPORAL RESOLUTION (# HOURS, DAY, WEEK,MONTH,YEAR,ALL)
 # Need to fix width, height and par so it changes depending on number of unique readers
 
 #Sources pit dat function that produces data set called f_test
